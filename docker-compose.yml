@@ -1,0 +1,14 @@
+version: "3.5"
+services:
+  chat2desk:
+    build: 
+      context: .
+    container_name: chat2desklist
+    restart: always
+    ports:
+      - "8009:8009"
+    environment:
+      - TELEGRAM_BOT_TOKEN=1385532726:AAGnEUIJrEqHBTpafJt_8x31rjkEShTsrcY
+      - TELEGRAM_CHAT_ID=-494686843
+      - PORT=8009
+      - AUTH_TOKEN = e2360e636184d429f52966a6a03fbf
