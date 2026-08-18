@@ -389,6 +389,12 @@
     .msg.assistant .bubble { color: var(--text); }
     .msg.error .bubble { color: var(--danger); }
 
+    .msg-meta {
+      margin-top: 6px;
+      font-size: 11px;
+      color: var(--text-3);
+    }
+
     .typing {
       display: inline-flex;
       gap: 5px;
@@ -645,7 +651,7 @@
         .replace(/"/g, "&quot;");
     }
 
-    function addMessage(role, text, isError = false) {
+    function addMessage(role, text, isError = false, latencyMs = null) {
       hideWelcome();
       const row = document.createElement("div");
       row.className = `msg ${role}` + (isError ? " error" : "");
@@ -661,6 +667,12 @@
       const bubble = document.createElement("div");
       bubble.className = "bubble";
       bubble.textContent = text;
+      if (latencyMs != null && !isError) {
+        const meta = document.createElement("div");
+        meta.className = "msg-meta";
+        meta.textContent = `ответ за ${(latencyMs / 1000).toFixed(1)} с`;
+        bubble.appendChild(meta);
+      }
 
       row.append(avatar, bubble);
       messagesEl.appendChild(row);
@@ -847,7 +859,7 @@
           const detail = data.detail || res.statusText || "Ошибка запроса";
           addMessage("assistant", String(detail), true);
         } else {
-          addMessage("assistant", data.response || "(пустой ответ)");
+          addMessage("assistant", data.response || "(пустой ответ)", false, data.latency_ms);
           if (data.chat_id) {
             currentChatId = data.chat_id;
             await loadChats();

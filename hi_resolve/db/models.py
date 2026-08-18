@@ -1,16 +1,14 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from pathlib import Path
 
 from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, sessionmaker
 
-DATA_DIR = Path(__file__).parent / "data"
-DB_PATH = DATA_DIR / "app.db"
+from hi_resolve.settings import settings
 
 engine = create_engine(
-    f"sqlite:///{DB_PATH}",
+    f"sqlite:///{settings.db_path}",
     connect_args={"check_same_thread": False},
 )
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
@@ -67,7 +65,7 @@ class Message(Base):
 
 
 def init_db() -> None:
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    settings.data_dir.mkdir(parents=True, exist_ok=True)
     Base.metadata.create_all(bind=engine)
 
 

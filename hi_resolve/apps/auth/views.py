@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from typing import Annotated
 
 from authlib.integrations.starlette_client import OAuth
@@ -8,7 +7,8 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
-from db import User, get_db, utcnow
+from hi_resolve.db import User, get_db, utcnow
+from hi_resolve.settings import settings
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -20,8 +20,8 @@ def configure_oauth() -> None:
     global _oauth_registered
     if _oauth_registered:
         return
-    client_id = os.getenv("GOOGLE_CLIENT_ID", "")
-    client_secret = os.getenv("GOOGLE_CLIENT_SECRET", "")
+    client_id = settings.google_client_id
+    client_secret = settings.google_client_secret
     if not client_id or not client_secret:
         return
     oauth.register(
@@ -35,7 +35,7 @@ def configure_oauth() -> None:
 
 
 def google_configured() -> bool:
-    return bool(os.getenv("GOOGLE_CLIENT_ID") and os.getenv("GOOGLE_CLIENT_SECRET"))
+    return settings.google_configured
 
 
 def get_current_user(
@@ -64,10 +64,7 @@ async def login(request: Request):
             status_code=503,
             detail="Google OAuth не настроен. Заполните GOOGLE_CLIENT_ID и GOOGLE_CLIENT_SECRET в .env",
         )
-    redirect_uri = os.getenv(
-        "OAUTH_REDIRECT_URI",
-        str(request.url_for("auth_callback")),
-    )
+    redirect_uri = settings.oauth_redirect_uri or str(request.url_for("auth_callback"))
     return await oauth.google.authorize_redirect(request, redirect_uri)
 
 
