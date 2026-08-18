@@ -1,29 +1,25 @@
-import asyncio
-import httpx
+from __future__ import annotations
 
-OLLAMA_URL = "http://localhost:11434/api/generate"
+import logging
 
+from fastapi import FastAPI
 
-async def main():
-    prompt = "Объясни что такое RAG простыми словами ответь на русском"
+from hi_resolve.db import init_db
+from hi_resolve.middleware import setup_middleware
+from hi_resolve.urls import include_urls
 
-    async with httpx.AsyncClient() as client:
-        response = await client.post(
-            OLLAMA_URL,
-            json={
-                "model": "tinyllama",   # или mistral / deepseek
-                "prompt": prompt,
-                "stream": False,
-                "options": {
-    "num_predict": 100
-},
-            },
-            timeout=60
-        )
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
+)
+logger = logging.getLogger("hi_resolve")
 
-        data = response.json()
-        print(data)
+app = FastAPI(title="Hi Resolve")
+setup_middleware(app)
+include_urls(app)
 
 
-if __name__ == "__main__":
-    asyncio.run(main())
+@app.on_event("startup")
+def on_startup() -> None:
+    init_db()
+    logger.info("app started")

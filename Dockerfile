@@ -1,20 +1,12 @@
-FROM python:3.7.2-alpine
+FROM python:3.12-slim
 
-RUN apk update \
-        && apk --no-cache add \
-            linux-headers \
-            gpgme-dev \
-            libxml2-dev \
-            openssl-dev\
-            libc-dev \
-            libffi-dev \
-            gcc 
+WORKDIR /app
 
-COPY . /chat2desk/
-WORKDIR /chat2desk
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-RUN pip install --upgrade pip \
-    && pip install --no-cache-dir -r /chat2desk/requirements.txt
+COPY . .
 
-EXPOSE 8009
-CMD  python -u chat2desk.py 8009
+EXPOSE 8000
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
