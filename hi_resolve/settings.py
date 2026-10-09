@@ -24,8 +24,8 @@ class Settings:
         "Ты полезный ассистент. Отвечай только на русском языке. "
         "Не используй английский, кроме имён собственных, кода и технических терминов."
     )
-    chunk_size = int(os.getenv("CHUNK_SIZE", "100"))
-    chunk_overlap = int(os.getenv("CHUNK_OVERLAP", "100"))
+    chunk_size = int(os.getenv("CHUNK_SIZE", "300"))
+    chunk_overlap = int(os.getenv("CHUNK_OVERLAP", "50"))
     rag_path = Path(os.getenv("RAG_PATH", "data/personal_knoledge.txt"))
     qdrant_url = os.getenv("QDRANT_URL", "http://127.0.0.1:6333")
 

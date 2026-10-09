@@ -5,6 +5,7 @@ from qdrant_client import QdrantClient
 from qdrant_client.http.models import PointStruct
 from hi_resolve.settings import settings
 import numpy as np
+from hi_resolve.chunking import chunk_text
 EMBEDDING_MODEL_NAME = "all-MiniLM-L6-v2"
 QDRANT_URL = settings.qdrant_url
 _model: SentenceTransformer | None = None
@@ -19,6 +20,14 @@ def load_questions(path: Path | str | None = None) -> list[str]:
         data = json.load(f)
     return [item["question"] for item in data["test_questions"]]
 
+
+def load_source_text(path: str = "rag_docs/new_.json") -> str:
+    with open(path, encoding="utf-8") as f:
+        data = json.load(f)
+
+    return "\n\n".join(
+        item["content"] for item in data["chunks"]
+    )
 
 def load_chunks(path: Path | str | None = None) -> list[dict]:
     """Читает чанки (контент/ответы) из rag_docs/new_.json."""
@@ -43,10 +52,17 @@ def cos_sim(a: list[float], b: list[float]) -> float:
     return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
 points = []
 
+def main_run():
+    
 
-if __name__ == "__main__":
-    questions = load_questions('rag_docs/questions.json')
-    chunks = load_chunks('rag_docs/new_.json')
+    questions = load_questions('rag_docs/questions2.json')
+    source_text = load_source_text()
+
+    chunks = chunk_text(
+        source_text,
+        chunk_size=300,
+        overlap=50,
+    )
     """
     chunks = load("new_.json")["chunks"]
     chunk_vecs = [embed(c["content"]) for c in chunks]
@@ -74,9 +90,13 @@ if __name__ == "__main__":
         i += 1
         scored = []
         for i, chunk in enumerate(chunks):
-            chunk_embedding = embed_text(chunk["content"])
+            chunk_embedding = embed_text(chunk)
             score = cos_sim(embedding, chunk_embedding)
             scored.append((score, chunk))
         top3 = sorted(scored, key=lambda x: x[0], reverse=True)[:3]
         print(question) 
         print(top3)
+
+
+if __name__ == "__main__":
+    main_run()
