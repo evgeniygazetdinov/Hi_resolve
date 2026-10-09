@@ -10,3 +10,6 @@ __pycache__/
 *.pyzwz
 .env
 data/
+rag_docs/
+*.json
+.vscode/
